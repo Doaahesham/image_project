@@ -16,7 +16,7 @@ FPS = 0
 
 
 # creating camera object
-camera = cv.VideoCapture(0)
+camera = cv.VideoCapture('test.mkv')
 # camera.set(3, 640)
 # camera.set(4, 480)
 
