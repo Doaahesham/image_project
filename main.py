@@ -7,12 +7,14 @@ import time
 COUNTER = 0
 TOTAL_BLINKS = 0
 CLOSED_EYES_FRAME = 3
+POS_COUNTER = 0
 cameraID = 0
 videoPath = "Video/Your Eyes Independently_Trim5.mp4"
 # variables for frame rate.
 FRAME_COUNTER = 0
 START_TIME = time.time()
 FPS = 0
+
 
 
 # creating camera object
@@ -78,6 +80,11 @@ while True:
         mask, pos, color = m.EyeTracking(frame, grayFrame, RightEyePoint)
         maskleft, leftPos, leftColor = m.EyeTracking(
             frame, grayFrame, LeftEyePoint)
+        
+        #count how many user looks left or right
+        if(pos != "Center"):
+            POS_COUNTER += 1
+
 
         # draw background as line where we put text.
         cv.line(image, (30, 90), (100, 90), color[0], 30)
@@ -107,6 +114,11 @@ while True:
         break
 # closing the camera
 camera.release()
+
+#output concentration percentage
+conc_percentage = (POS_COUNTER/FRAME_COUNTER)*100
+print('concentration percentage: ', round(conc_percentage, 2))
+
 # Recoder.release()
 # closing  all the windows
 cv.destroyAllWindows()
