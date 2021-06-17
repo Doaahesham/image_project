@@ -1,5 +1,6 @@
 import os
 from video import video_concentration
+from camera import camera_concentration
 
 
 def total_concentration_percentage(path):
@@ -29,3 +30,7 @@ def attendance_percentage (num_students, path):
     files = os.listdir( path )
     return round((len(files)/ num_students) * 100 ,2)
 
+
+
+def live_camera_concentration():
+    return camera_concentration()

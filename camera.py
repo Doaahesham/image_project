@@ -83,7 +83,7 @@ def camera_concentration():
         key = cv.waitKey(1)
 
         # if q is pressed on keyboard: quit
-        if key == ord('q') or FRAME_COUNTER == 300:
+        if key == ord('q'):
             break
     # closing the camera
     camera.release()
