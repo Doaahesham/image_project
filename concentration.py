@@ -3,19 +3,32 @@ from video import video_concentration
 from camera import camera_concentration
 
 
-def total_concentration_percentage(path):
+# from main import Ui_MainWindow
+
+
+
+
+def total_concentration_percentage(path, gui):
     '''
      fucntion take path return list of each student percentage, total percentage of all students
     '''
+
+    #my_window = Ui_MainWindow(window)
+
+
     percentages = []
     percentage = 0
     files = os.listdir( path )
+    num_of_files = float(len(files))
+
     counter = 0
+    gui.progressBar.setValue(0 )
     for video in files:
         current = video_concentration(path + video)
-        percentages.append(current)
+        percentages.append( [video,current])
         percentage += current
         counter += 1
+        gui.progressBar.setValue ( (counter / num_of_files)* 100.00 )
     
     res = round(percentage/counter , 2) 
     return percentages,res

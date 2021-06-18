@@ -15,13 +15,16 @@ from PyQt5.QtWidgets import QFileDialog
 import sys
 import cv2
 import matplotlib.pyplot as plt
-
+import numpy as np
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 import time
 
+import platform
+from concentration import total_concentration_percentage, attendance_percentage
+import camera
 
 class Ui_MainWindow(object):
 
@@ -74,9 +77,9 @@ class Ui_MainWindow(object):
         self.te_broswe = QtWidgets.QLineEdit(self.centralwidget)
         self.te_broswe.setGeometry(QtCore.QRect(40, 160, 361, 41))
         self.te_broswe.setObjectName("te_broswe")
-        self.btn_alanyze = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_alanyze.setGeometry(QtCore.QRect(150, 260, 171, 51))
-        self.btn_alanyze.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+        self.btn_analyze = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_analyze.setGeometry(QtCore.QRect(150, 260, 171, 51))
+        self.btn_analyze.setStyleSheet("background-color: rgb(92, 53, 102);\n"
                                         "border-style: outset;\n"
                                         "border-width: 2px;\n"
                                         "border-radius: 15px;\n"
@@ -85,8 +88,10 @@ class Ui_MainWindow(object):
                                         "padding: 4px;\n"
                                         "font: bold 18px;\n"
                                         "color: white")
-        self.btn_alanyze.setObjectName("btn_alanyze")
+        self.btn_analyze.setObjectName("btn_analyze")
 
+
+        self.btn_analyze.clicked.connect(self.analyze)
 
 
         self.btn_open_camera = QtWidgets.QPushButton(self.centralwidget)
@@ -107,11 +112,13 @@ class Ui_MainWindow(object):
 
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setGeometry(QtCore.QRect(30, 340, 1081, 21))
-        self.progressBar.setProperty("value", 24)
+        self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
         self.text_result = QtWidgets.QTextBrowser(self.centralwidget)
         self.text_result.setGeometry(QtCore.QRect(30, 370, 1081, 351))
         self.text_result.setObjectName("text_result")
+        self.text_result.setStyleSheet("font: 20px")
+
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(30, 120, 471, 21))
         font = QtGui.QFont()
@@ -141,7 +148,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label.setText(_translate("MainWindow", "Focus Analysis"))
         self.btn_browse.setText(_translate("MainWindow", "Browse"))
-        self.btn_alanyze.setText(_translate("MainWindow", "Analyze "))
+        self.btn_analyze.setText(_translate("MainWindow", "Analyze "))
         self.btn_open_camera.setText(_translate("MainWindow", "Open Camera"))
         self.text_result.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
@@ -155,19 +162,66 @@ class Ui_MainWindow(object):
         self.cam_window = Cam_Window()
         self.cam_window.show()
         # self.cam_window.open_cam()
+
+        # print(camera.camera_concentration())
  
     def file_dialog(self):
         fileName = QFileDialog.getExistingDirectory(self.main_window, 'Select Directory')
         self.te_broswe.setText(fileName)
         print(fileName)
 
+    def analyze(self):
+
+        vid_folder = str(self.te_broswe.text())
+
+        if platform.system() =='Linux':
+            vid_folder += '/'
+        elif platform.system() == 'Windows':
+            vid_folder += '\\'
+        else:
+            print("We don't support Mac OS")
+            
+
+        print(vid_folder)
+        percentages,res = total_concentration_percentage(vid_folder,self)
+ 
+        attendance = attendance_percentage(2, vid_folder)
+
+        for entry in percentages:
+            s = f' {entry[0]} has concentration of:  {entry[1]}%'
+            self.text_result.append(s)
+
+        res_str = f'The Average concentration for all people is: {res}%'
+
+        self.text_result.append(res_str)
+
+        attendance_str = f'The Attendance for all people is: {attendance}%'
+
+        self.text_result.append(attendance_str)
+
+        print(percentages, attendance)
+
+
+
+
+
+
+
 
 class Thread(QThread):
+
+
+    def __init__(self):
+        super().__init__()
+        self._run_flag = True
+
+
     changePixmap = pyqtSignal(QImage)
 
     def run(self):
         cap = cv2.VideoCapture(0)
-        while True:
+        while self._run_flag:
+            time.sleep(0.1)
             ret, frame = cap.read()
             if ret:
                 
@@ -178,10 +232,21 @@ class Thread(QThread):
                 p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
                 self.changePixmap.emit(p)
 
+        cap.release()
+            
+
+    def stop(self):
+
+        self._run_flag = False
+        self.wait()
+
 
 class Cam_Window(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.COUNTER=0.0
+        self.SUM= 0.0
         self.setWindowTitle("Qt static label demo")
 
 
@@ -213,7 +278,7 @@ class Cam_Window(QtWidgets.QMainWindow):
         self.status.setStyleSheet("color: rgb(92, 53, 102);")
         self.status.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.status.setText('Status Test Text')
+        self.status.setText('Processing........')
 
 
 
@@ -231,25 +296,50 @@ class Cam_Window(QtWidgets.QMainWindow):
                                         "padding: 4px;\n"
                                         "font: bold 18px;\n"
                                         "color: white")
-        self.btn_close.setText('Close') 
+        self.btn_close.setText('Finish') 
 
-        self.btn_close.clicked.connect(self.close)
+        self.btn_close.clicked.connect(self.close_window)
 
         
         
-        self.th = Thread(self)
+        self.th = Thread()
         self.th.changePixmap.connect(self.setImage)
         self.th.start()
-        self.th.quit()
+        
     
+    def qimage_to_array(self,image):
+        size = image.size()
+        s = image.bits().asstring(size.width() * size.height() * image.depth() // 8)
+        arr = np.fromstring(s, dtype=np.uint8).reshape((size.height(), size.width(), image.depth() // 8))
+        return arr
+
+
     @pyqtSlot(QImage)
     def setImage(self, image):
+        
+        self.COUNTER +=1
+        converted_image =   self.qimage_to_array(image)
+        self.SUM += camera.camera_concentration(converted_image)
         self.image_label.setPixmap(QPixmap.fromImage(image))
 
 
 
-    def close(self):
-        self.close()
+    def closeEvent(self, event):
+        self.th.stop()
+        event.accept()
+
+
+    def close_window(self):
+        self.th.stop()
+
+        avg = str (  round(self.SUM / self.COUNTER,2 )  )
+        avg_str = f' The Average Concentration is:{avg}% '
+       
+        self.status.setText(avg_str)
+        # event.accept()
+        # self.th.exit()
+        #self.close()
+
 
 
 
