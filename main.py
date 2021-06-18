@@ -1,124 +1,264 @@
-import cv2 as cv
-import numpy as np
-import modules as m
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'untitled.ui'
+#
+# Created by: PyQt5 UI code generator 5.9.2
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QPixmap, QImage, QColor
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt,QObject
+from PyQt5.QtWidgets import QFileDialog 
+import sys
+import cv2
+import matplotlib.pyplot as plt
+
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+
 import time
 
-# Variables
-COUNTER = 0
-TOTAL_BLINKS = 0
-CLOSED_EYES_FRAME = 3
-POS_COUNTER = 0
-cameraID = 0
-videoPath = "Video/Your Eyes Independently_Trim5.mp4"
-# variables for frame rate.
-FRAME_COUNTER = 0
-START_TIME = time.time()
-FPS = 0
+
+class Ui_MainWindow(object):
+
+ 
+    def setupUi(self, MainWindow):
+
+        self.main_window = MainWindow
+
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(1174, 769)
+        MainWindow.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                "background-color: rgb(206, 92, 0);\n"
+                                "background-color: rgb(205, 204,229);")  
+
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label.setGeometry(QtCore.QRect(330, 0, 461, 101))
+        font = QtGui.QFont()
+        font.setFamily("MathJax_Math")
+        font.setPointSize(30)
+        font.setBold(True)
+        font.setItalic(True)
+        font.setWeight(75)
+        font.setStrikeOut(False)
+        font.setKerning(True)
+        self.label.setFont(font)
+        self.label.setStyleSheet("color: rgb(92, 53, 102);\n"
+                                "color: rgb(32, 74, 135);\n"
+                                "")
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.btn_browse = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_browse.setGeometry(QtCore.QRect(430, 160, 151, 41))
+        self.btn_browse.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                        "border-style: outset;\n"
+                                        "border-width: 2px;\n"
+                                        "border-radius: 15px;\n"
+                                        "border-color: black;\n"
+                                        "border-color: black;\n"
+                                        "padding: 4px;\n"
+                                        "font: bold 18px;\n"
+                                        "color: white")
+
+
+        self.btn_browse.setObjectName("btn_browse")
+
+        self.btn_browse.clicked.connect(self.file_dialog)
+
+        self.te_broswe = QtWidgets.QLineEdit(self.centralwidget)
+        self.te_broswe.setGeometry(QtCore.QRect(40, 160, 361, 41))
+        self.te_broswe.setObjectName("te_broswe")
+        self.btn_alanyze = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_alanyze.setGeometry(QtCore.QRect(150, 260, 171, 51))
+        self.btn_alanyze.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                        "border-style: outset;\n"
+                                        "border-width: 2px;\n"
+                                        "border-radius: 15px;\n"
+                                        "border-color: black;\n"
+                                        "border-color: black;\n"
+                                        "padding: 4px;\n"
+                                        "font: bold 18px;\n"
+                                        "color: white")
+        self.btn_alanyze.setObjectName("btn_alanyze")
 
 
 
-# creating camera object
-camera = cv.VideoCapture('test/test2.mkv')
-# camera.set(3, 640)
-# camera.set(4, 480)
-
-# Define the codec and create VideoWriter object
-fourcc = cv.VideoWriter_fourcc(*'XVID')
-f = camera.get(cv.CAP_PROP_FPS)
-width = camera.get(cv.CAP_PROP_FRAME_WIDTH)
-height = camera.get(cv.CAP_PROP_FRAME_HEIGHT)
-print(width, height, f)
-fileName = videoPath.split('/')[1]
-name = fileName.split('.')[0]
-print(name)
-
-
-# Recoder = cv.VideoWriter(f'{name}.mp4', fourcc, 15, (int(width), int(height)))
-
-while True:
-    FRAME_COUNTER += 1
-    # getting frame from camera
-    ret, frame = camera.read()
-    if ret == False:
-        break
-
-    # converting frame into Gry image.
-    grayFrame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    height, width = grayFrame.shape
-    circleCenter = (int(width/2), 50)
-    # calling the face detector funciton
-    image, face = m.faceDetector(frame, grayFrame)
-    if face is not None:
-
-        # calling landmarks detector funciton.
-        image, PointList = m.landmarkDetector(frame, grayFrame, face)
-        # print(PointList)
-
-        cv.putText(frame, f'FPS: {round(FPS,1)}',
-                   (460, 20), m.fonts, 0.7, m.GREEN, 2)
-        RightEyePoint = PointList[36:42]
-        LeftEyePoint = PointList[42:48]
-        leftRatio, topMid, bottomMid = m.blinkDetector(LeftEyePoint)
-        rightRatio, rTop, rBottom = m.blinkDetector(RightEyePoint)
+        self.btn_open_camera = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_open_camera.setGeometry(QtCore.QRect(890, 160, 211, 61))
+        self.btn_open_camera.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                        "border-style: outset;\n"
+                                        "border-width: 2px;\n"
+                                        "border-radius: 15px;\n"
+                                        "border-color: black;\n"
+                                        "border-color: black;\n"
+                                        "padding: 4px;\n"
+                                        "font: bold 18px;\n"
+                                        "color: white")
+        self.btn_open_camera.setObjectName("btn_open_camera")
+        self.btn_open_camera.clicked.connect(self.open_cam_window)
 
 
-        blinkRatio = (leftRatio + rightRatio)/2
+
+        self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
+        self.progressBar.setGeometry(QtCore.QRect(30, 340, 1081, 21))
+        self.progressBar.setProperty("value", 24)
+        self.progressBar.setObjectName("progressBar")
+        self.text_result = QtWidgets.QTextBrowser(self.centralwidget)
+        self.text_result.setGeometry(QtCore.QRect(30, 370, 1081, 351))
+        self.text_result.setObjectName("text_result")
+        self.label_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_2.setGeometry(QtCore.QRect(30, 120, 471, 21))
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setStyleSheet("color: rgb(92, 53, 102);")
+        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_2.setObjectName("label_2")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1174, 23))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
 
-        if blinkRatio > 4:
-            COUNTER += 1
 
-        else:
-            if COUNTER > CLOSED_EYES_FRAME:
-                TOTAL_BLINKS += 1
-                COUNTER = 0
-        cv.putText(image, f'Total Blinks: {TOTAL_BLINKS}', (230, 17),
-                   m.fonts, 0.5, m.RED, 2)
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label.setText(_translate("MainWindow", "Focus Analysis"))
+        self.btn_browse.setText(_translate("MainWindow", "Browse"))
+        self.btn_alanyze.setText(_translate("MainWindow", "Analyze "))
+        self.btn_open_camera.setText(_translate("MainWindow", "Open Camera"))
+        self.text_result.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                        "p, li { white-space: pre-wrap; }\n"
+                                        "</style></head><body style=\" font-family:\'PowerlineSymbols Medium\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+                                        "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.label_2.setText(_translate("MainWindow", "Please choose the path for the videos directory"))
 
-        # for p in LeftEyePoint:
-        #     cv.circle(image, p, 3, m.MAGENTA, 1)
-        mask, pos, color = m.EyeTracking(frame, grayFrame, RightEyePoint)
-        maskleft, leftPos, leftColor = m.EyeTracking(
-            frame, grayFrame, LeftEyePoint)
+    def open_cam_window(self):
+     
+        self.cam_window = Cam_Window()
+        self.cam_window.show()
+        # self.cam_window.open_cam()
+ 
+    def file_dialog(self):
+        fileName = QFileDialog.getExistingDirectory(self.main_window, 'Select Directory')
+        self.te_broswe.setText(fileName)
+        print(fileName)
+
+
+class Thread(QThread):
+    changePixmap = pyqtSignal(QImage)
+
+    def run(self):
+        cap = cv2.VideoCapture(0)
+        while True:
+            ret, frame = cap.read()
+            if ret:
+                
+                rgbImage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgbImage.shape
+                bytesPerLine = ch * w
+                convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+                self.changePixmap.emit(p)
+
+
+class Cam_Window(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Qt static label demo")
+
+
+        self.setObjectName("MainWindow")
+        self.resize(1174, 769)
+        self.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                "background-color: rgb(206, 92, 0);\n"
+                                "background-color: rgb(205, 204,229);")
+
+
+
+        self.disply_width = 640
+        self.display_height = 480
+        self.image_label = QLabel(self)
+        self.image_label.resize(self.disply_width, self.display_height)
+        self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.image_label.setGeometry(QtCore.QRect(210, 40, 640, 480))
+
+
+
+
+        self.status = QtWidgets.QLabel(self)
+        self.status.setGeometry(QtCore.QRect(210, 600, 471, 21))
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        font.setBold(True)
+        font.setWeight(75)
+        self.status.setFont(font)
+        self.status.setStyleSheet("color: rgb(92, 53, 102);")
+        self.status.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.status.setText('Status Test Text')
+
+
+
+
+
+
+        self.btn_close = QtWidgets.QPushButton(self)
+        self.btn_close.setGeometry(QtCore.QRect(900, 700, 151, 41))
+        self.btn_close.setStyleSheet("background-color: rgb(92, 53, 102);\n"
+                                        "border-style: outset;\n"
+                                        "border-width: 2px;\n"
+                                        "border-radius: 15px;\n"
+                                        "border-color: black;\n"
+                                        "border-color: black;\n"
+                                        "padding: 4px;\n"
+                                        "font: bold 18px;\n"
+                                        "color: white")
+        self.btn_close.setText('Close') 
+
+        self.btn_close.clicked.connect(self.close)
+
         
-        #count how many user looks left or right
-        if(pos != "Center"):
-            POS_COUNTER += 1
+        
+        self.th = Thread(self)
+        self.th.changePixmap.connect(self.setImage)
+        self.th.start()
+        self.th.quit()
+    
+    @pyqtSlot(QImage)
+    def setImage(self, image):
+        self.image_label.setPixmap(QPixmap.fromImage(image))
 
 
-        # draw background as line where we put text.
-        cv.line(image, (30, 90), (100, 90), color[0], 30)
+
+    def close(self):
+        self.close()
 
 
-        # writing text on above line
-        cv.putText(image, f'{pos}', (35, 95), m.fonts, 0.6, color[1], 2)
 
 
-        # showing the frame on the screen
-        cv.imshow('Frame', image)
-    else:
-        cv.imshow('Frame', frame)
-
-    # Recoder.write(frame)
-    # calculating the seconds
-    SECONDS = time.time() - START_TIME
-    # calculating the frame rate
-    FPS = FRAME_COUNTER/SECONDS
-    # print(FPS)
-    # defining the key to Quite the Loop
-
-    key = cv.waitKey(1)
-
-    # if q is pressed on keyboard: quit
-    if key == ord('q'):
-        break
-# closing the camera
-camera.release()
-
-#output concentration percentage
-conc_percentage = (POS_COUNTER/FRAME_COUNTER)*100
-print('concentration percentage: ', round(conc_percentage, 2))
-
-# Recoder.release()
-# closing  all the windows
-cv.destroyAllWindows()
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
