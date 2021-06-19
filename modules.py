@@ -25,6 +25,12 @@ predictor = dlib.shape_predictor("Predictor/shape_predictor_68_face_landmarks.da
 
 
 def midpoint(pts1, pts2):
+    """
+    calculate the middle of two points in x and y directions
+    pts1: point one carry the value of x and y
+    pts1: point two carry the value of x and y
+    return: the middle of x and y of two points
+    """
     x, y = pts1
     x1, y1 = pts2
     xOut = int((x + x1) / 2)
@@ -33,15 +39,15 @@ def midpoint(pts1, pts2):
     return (xOut, yOut)
 
 
-def eucaldainDistance(pts1, pts2):
-    x, y = pts1
-    x1, y1 = pts2
-    eucaldainDist = math.sqrt((x1 - x) ** 2 + (y1 - y) ** 2)
-
-    return eucaldainDist
-
 
 def faceDetector(image, gray, Drawing=True):
+    """
+    measure the coordinates of the face on the image
+    image: the image which I would to detect face from
+    gray: the gray image which I would to detect face from
+    Drawing: if true draw rectangle for coordinates
+    return: the image , detected face
+    """
     cord1 = (0, 0)  # coordinate 1
     cord2 = (0, 0)  # coordinate 2
     # getting faces detected
@@ -58,18 +64,28 @@ def faceDetector(image, gray, Drawing=True):
     return image, face
 
 
-# get all landmarks of face including eye landmark
-def landmarkDetector(image, gray, face):
-    landmarks = predictor(gray, face)
-    points = []
-    for n in range(0, 68):
-        pointposition = (landmarks.part(n).x, landmarks.part(n).y)
-        # get position of points
-        points.append(pointposition)
-    return image, points
 
+
+
+def eucaldainDistance(pts1, pts2):
+    """
+    calculate the eculidian distance of two points in x and y directions
+    pts1: point one carry the value of x and y
+    pts1: point two carry the value of x and y
+    return: the eculedian distance of two points
+    """
+    x, y = pts1
+    x1, y1 = pts2
+    eucaldainDist = math.sqrt((x1 - x) ** 2 + (y1 - y) ** 2)
+
+    return eucaldainDist
 
 def blinkDetector(eyePoints):
+    """
+    track the eye to detect the blincks and the position through the video
+    eyePoints: the points of top and bottom eyes
+    return: the ratio of all of blincks, top middle and bottom midle.
+    """
     top = eyePoints[1:3]  # points of top eye
     bottom = eyePoints[4:6]  # points of bottom eye
     topMid = midpoint(top[0], top[1])
@@ -81,7 +97,33 @@ def blinkDetector(eyePoints):
     return blinkingRatio, topMid, bottomMid
 
 
+
+
+def landmarkDetector(image, gray, face):
+    """
+    get all landmarks of face including eye landmark
+    image: the image which I would to get landmark from
+    gray: the gray image which I would to get landmark from
+    face: detected face in image
+    return: the image , points of land mark
+    """
+    landmarks = predictor(gray, face)
+    points = []
+    for n in range(0, 68):
+        pointposition = (landmarks.part(n).x, landmarks.part(n).y)
+        # get position of points
+        points.append(pointposition)
+    return image, points
+
+
+
+
 def Position(ValuesList):
+    """
+    get the action which the eye aleady did
+    valuesList: the list of value of the eye coordinates
+    return: the status of the eye and color rerpesenting each state
+    """
     maxIndex = ValuesList.index(max(ValuesList))
     posEye = ''
     color = [BLACK,WHITE]
@@ -101,6 +143,13 @@ def Position(ValuesList):
 
 
 def EyeTracking(image, gray, eyePoints):
+    """
+    track the eye so we could get the position to know the state of the student Right,Lft or Center.
+    image: the image which I would to get position of eye from
+    gray: the gray image which I would to get position of eye from
+    eyePoints: the points of eye which I want to concern on
+    return: mask of the dimension of the image, state of the eye, color presenting the state
+    """
     dimension = gray.shape
     mask = np.zeros(dimension, dtype=np.uint8)
     # convert eyePoints into arrays.
