@@ -6,28 +6,26 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QImage, QColor
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt,QObject
-from PyQt5.QtWidgets import QFileDialog 
+import platform
 import sys
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-
 import time
 
-import platform
-from concentration import total_concentration_percentage, attendance_percentage
+import cv2
+import numpy as np
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import *
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QFileDialog, QLabel
+
 import camera
+from concentration import attendance_percentage, total_concentration_percentage
+
 
 class Ui_MainWindow(object):
-
+    
  
     def setupUi(self, MainWindow):
 
