@@ -110,6 +110,8 @@ class Ui_MainWindow(object):
 
 
 
+
+
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setGeometry(QtCore.QRect(30, 340, 1081, 21))
         self.progressBar.setProperty("value", 0)
@@ -137,6 +139,18 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
+        self.label_student = QtWidgets.QLabel(self.centralwidget)
+        self.label_student.setGeometry(QtCore.QRect(360, 230,300,50))
+        self.label_student.setText('Enter the Number of students')
+        self.label_student.setFont(font)
+        self.label_student.setStyleSheet("color: rgb(92, 53, 102);")
+        self.te_students = QtWidgets.QLineEdit(self.centralwidget)
+        self.te_students.setGeometry(QtCore.QRect(360, 270, 200, 41))
+        self.te_students.setObjectName("te_broswe")
+        self.te_students.setFont(font)
+        
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -185,7 +199,8 @@ class Ui_MainWindow(object):
         print(vid_folder)
         percentages,res = total_concentration_percentage(vid_folder,self)
  
-        attendance = attendance_percentage(2, vid_folder)
+        num_of_students = int(self.te_students.text() )
+        attendance = attendance_percentage(num_of_students, vid_folder)
 
         for entry in percentages:
             s = f' {entry[0]} has concentration of:  {entry[1]}%'
