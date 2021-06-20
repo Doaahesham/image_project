@@ -236,7 +236,7 @@ class Thread(QThread):
     def run(self):
         cap = cv2.VideoCapture(0)
         while self._run_flag:
-            time.sleep(0.1)
+            time.sleep(0.05)
             ret, frame = cap.read()
             if ret:
                 
